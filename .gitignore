@@ -4,3 +4,4 @@ assistant-modules/__pycache__/
 .env/
 .active-threads
 .active-assistants
+wake-word.ppn
