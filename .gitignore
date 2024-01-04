@@ -5,3 +5,4 @@ assistant-modules/__pycache__/
 .active-threads
 .active-assistants
 wake-word.ppn
+assistant-prompt.txt
