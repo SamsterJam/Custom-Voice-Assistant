@@ -1,6 +1,14 @@
 import requests
+import json
 
-def get_weather(api_key, location):
+# Get api_key from config
+with open('config.json') as config_file:
+    config = json.load(config_file)
+
+api_key=config['custom']['openweathermap_api_key']
+
+# Module function
+def get_weather(location):
     """
     Get the current weather for a location using the OpenWeatherMap API.
 

@@ -26,6 +26,7 @@ try:
             # Listen for speech after wake word is detected
             command = recognizer.listen_for_speech()
             if command:
+                play_audio('sounds/Heard.wav')
                 # Process the recognized speech command using the OpenAI client
                 print(f"Processing command: {command}")
                 response = openai_client.process_with_gpt(command)
