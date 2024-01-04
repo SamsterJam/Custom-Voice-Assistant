@@ -2,6 +2,7 @@ import openai
 from pathlib import Path
 import json
 import importlib
+from audio_player import play_audio
 
 class OpenAIClient:
     def __init__(self, config):
@@ -39,6 +40,7 @@ class OpenAIClient:
 
         # Create an Assistant
         assistant_response = self.client.beta.assistants.create(
+            name="Voice-Assistant",
             instructions=instructions,
             tools=tools,
             model="gpt-3.5-turbo-1106"
@@ -112,6 +114,7 @@ class OpenAIClient:
             function = getattr(module, function_name)
 
             # Call the function with the provided arguments
+            play_audio('sounds/Request.wav')
             output = function(**arguments)
 
             # Append the output to the tool_outputs list
@@ -126,6 +129,7 @@ class OpenAIClient:
             run_id=run.id,
             tool_outputs=tool_outputs
         )
+        play_audio('sounds/Received.wav')
 
 
     def close_assistant(self, assistant_id):

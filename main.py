@@ -6,7 +6,6 @@ from openai_client import OpenAIClient
 from voice_synthesis import VoiceSynthesizer
 import json
 import os
-import time
 
 # Load configuration from a JSON file
 with open('config.json') as config_file:
@@ -31,8 +30,6 @@ try:
 
             if status == Listen.SUCCESS:
 
-                # Process local command
-
                 # Check if the command is a local command
                 if process_for_local_command(command):
                     continue  # Skip further processing if it's a local command
@@ -40,7 +37,7 @@ try:
                 play_audio('sounds/Heard.wav')
                 print(f"Processing command: {command}")
                 response = openai_client.process_with_gpt(command)
-                play_audio('sounds/Received.wav')
+                play_audio('sounds/Ready.wav')
                 print(f"Assistant response: {response}")
                 
                 # Synthesize the response to speech
