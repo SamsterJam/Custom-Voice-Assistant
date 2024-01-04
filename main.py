@@ -6,10 +6,15 @@ from openai_client import OpenAIClient
 from voice_synthesis import VoiceSynthesizer
 import json
 import os
+import sys
 
 # Load configuration from a JSON file
-with open('config.json') as config_file:
-    config = json.load(config_file)
+try:
+    with open('config.json') as config_file:
+        config = json.load(config_file)
+except FileNotFoundError:
+    print("The 'config.json' file does not exist. Please move the 'config-template.json' to 'config.json' and try again.")
+    sys.exit(1)
 
 # Initializations
 openai_client = OpenAIClient(config)
