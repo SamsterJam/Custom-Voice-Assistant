@@ -1,5 +1,13 @@
 import speech_recognition as sr
 import json
+from enum import Enum, auto
+
+# Listen Status
+class Listen(Enum):
+    SUCCESS = auto()
+    NO_SPEECH = auto()
+    ERROR = auto()
+
 
 class SpeechRecognizer:
     def __init__(self, config_path='config.json'):
@@ -25,22 +33,20 @@ class SpeechRecognizer:
         with self.microphone as source:
             print("Listening for speech...")
             try:
-                # Listen for the first phrase and extract it into audio data
                 audio = self.recognizer.listen(source, timeout=self.command_await_timeout)
             except sr.WaitTimeoutError:
                 print(f"No speech detected within {self.command_await_timeout} seconds.")
-                return None
+                return Listen.NO_SPEECH, None
 
-        # Recognize speech using Google Web Speech API
         try:
             text = self.recognizer.recognize_google(audio)
-            return text
+            return Listen.SUCCESS, text
         except sr.UnknownValueError:
             print("Google Web Speech API could not understand audio")
+            return Listen.NO_SPEECH, None
         except sr.RequestError as e:
             print(f"Could not request results from Google Web Speech API; {e}")
-
-        return None
+            return Listen.ERROR, None
 
     def cleanup(self):
         # Perform any necessary cleanup actions

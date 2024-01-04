@@ -1,6 +1,6 @@
 from wake_word_detector import WakeWordDetector
 from audio_player import play_audio
-from speech_recognizer import SpeechRecognizer
+from speech_recognizer import SpeechRecognizer, Listen
 from openai_client import OpenAIClient
 import json
 
@@ -23,16 +23,22 @@ try:
             print("Wake word detected!")
             play_audio('sounds/Wake.wav')
             
-            # Listen for speech after wake word is detected
-            command = recognizer.listen_for_speech()
-            if command:
+            status, command = recognizer.listen_for_speech()
+
+            # Command was heard
+            if status == Listen.SUCCESS:
                 play_audio('sounds/Heard.wav')
-                # Process the recognized speech command using the OpenAI client
                 print(f"Processing command: {command}")
                 response = openai_client.process_with_gpt(command)
                 print(f"Assistant response: {response}")
-                
-                # Optionally, play a response or perform an action based on the assistant's response
+
+            # No command heard
+            elif status == Listen.NO_SPEECH:
+                play_audio('sounds/NoSpeech.wav')
+
+            # Error in transcribing command
+            elif status == Listen.ERROR:
+                play_audio('sounds/Error.wav')
 
 except KeyboardInterrupt:
     print("Stopping...")
