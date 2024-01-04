@@ -3,3 +3,4 @@ pyaudio
 python-dotenv
 SpeechRecognition
 openai
+google-cloud-texttospeech

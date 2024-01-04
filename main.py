@@ -1,18 +1,23 @@
 from wake_word_detector import WakeWordDetector
-from audio_player import play_audio
+from audio_player import play_audio, play_voice
 from speech_recognizer import SpeechRecognizer, Listen
 from local_commands import process_for_local_command, ShutdownRequested
 from openai_client import OpenAIClient
+from voice_synthesis import VoiceSynthesizer
 import json
+import os
+import time
 
 # Load configuration from a JSON file
 with open('config.json') as config_file:
     config = json.load(config_file)
 
-# Initialize OpenAI client, WakeWordDetector and SpeechRecognizer
+# Initializations
 openai_client = OpenAIClient(config)
 detector = WakeWordDetector()
 recognizer = SpeechRecognizer()
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config['api-keys']['google_credentials']
+voice_synthesizer = VoiceSynthesizer(config)
 
 print("Listening for wake word...")
 
@@ -27,18 +32,21 @@ try:
             if status == Listen.SUCCESS:
 
                 # Process local command
-                try:
-                    # Check if the command is a local command
-                    if process_for_local_command(command):
-                        continue  # Skip further processing if it's a local command
-                except ShutdownRequested:
-                    break
+
+                # Check if the command is a local command
+                if process_for_local_command(command):
+                    continue  # Skip further processing if it's a local command
 
                 play_audio('sounds/Heard.wav')
                 print(f"Processing command: {command}")
                 response = openai_client.process_with_gpt(command)
                 play_audio('sounds/Received.wav')
                 print(f"Assistant response: {response}")
+                
+                # Synthesize the response to speech
+                audio_content = voice_synthesizer.synthesize_speech(response)
+                if audio_content:
+                    play_voice(audio_content)
 
             # No command heard
             elif status == Listen.NO_SPEECH:
@@ -48,7 +56,7 @@ try:
             elif status == Listen.ERROR:
                 play_audio('sounds/Error.wav')
 
-except KeyboardInterrupt:
+except (KeyboardInterrupt, ShutdownRequested):
     print("Stopping...")
 
 finally:
@@ -56,3 +64,4 @@ finally:
     openai_client.cleanup()
     detector.cleanup()
     recognizer.cleanup()
+    voice_synthesizer.cleanup()
