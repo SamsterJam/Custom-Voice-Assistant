@@ -10,7 +10,7 @@ class WakeWordDetector:
             config = json.load(config_file)
 
         # Get the API keys and other settings from the config file
-        porcupine_access_key = config['api-keys']['porcupine_access_key']
+        porcupine_access_key = config['api-keys']['porcupine_api_key']
         wake_word_path = config['wake_word_settings']['custom_wake_word_file']
 
         # Initialize Porcupine

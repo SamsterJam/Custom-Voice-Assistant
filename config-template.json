@@ -1,0 +1,29 @@
+{
+    "api-keys": {
+        "porcupine_api_key": "your-porcupine-api-key",
+        "openai_api_key": "your-openai-api-key",
+        "google_credentials": "path/to/your/google-credentials.json"
+    },
+    "assistant-settings": {
+        "model": "gpt-3.5-turbo-1106"
+    },
+    "voice_settings": {
+        "speaking_rate": 1.15,
+        "voice_name": "en-US-Polyglot-1",
+        "pitch": -5.0
+    },
+    "recognition_settings": {
+        "noise_calibration_time": 3,
+        "command_await_timeout": 5,
+        "recognizer_pause_threshold": 0.3,
+        "recognizer_phrase_threshold": 0.3,
+        "recognizer_non_speaking_duration": 0.2,
+        "noise_level": 350.0
+    },
+    "wake_word_settings": {
+        "custom_wake_word_file": "wake-word.ppn"
+    },
+    "custom": {
+        "weatherapi_api_key": "your-openmeto-api-key"
+    }
+}
