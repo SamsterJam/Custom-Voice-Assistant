@@ -114,9 +114,19 @@ class OpenAIClient:
         # Process each required action
         for action in required_actions:
             function_name = action.function.name
-            arguments = json.loads(action.function.arguments)
+            arguments_str = action.function.arguments
 
-            print(f"Assistant called: '{function_name}({arguments})'")
+            # Debugging: print the arguments string
+            print(f"Assistant calling: '{function_name}({arguments_str})'...")
+
+            try:
+                # Attempt to parse the JSON string
+                arguments = json.loads(arguments_str)
+            except json.JSONDecodeError as e:
+                # Handle JSON decoding error
+                print(f"Error decoding JSON: {e}")
+                continue  # Skip this action and continue with the next one
+            
             # Import the module from the 'assistant-modules' folder
             module = importlib.import_module(f'assistant-modules.{function_name}')
             function = getattr(module, function_name)

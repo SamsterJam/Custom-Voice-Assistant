@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, date
 
 # A mapping of weather codes to general forecast descriptions
 weather_code_descriptions = {
@@ -48,12 +48,14 @@ def get_weather(latitude, longitude, day=None):
         high_temp = daily.get('temperature_2m_max', [])[0]  # Today's high temperature
         low_temp = daily.get('temperature_2m_min', [])[0]  # Today's low temperature
         weather_str = (
-            f"Current weather: {weather_description}. "
-            f"Temperature: {current.get('temperature_2m')}°F, "
-            f"High: {high_temp}°F, "
-            f"Low: {low_temp}°F, "
+            f"[Current weather (Today: {date.today()})]: {weather_description}. "
+            f"Temperature: {current.get('temperature_2m')}°, "
+            f"High: {high_temp}°, "
+            f"Low: {low_temp}°, "
             f"Wind speed: {current.get('wind_speed_10m')} mph, "
         )
+        
+        weather_str += "(To get forcasts or historical weather, provide a date in the third parameter)"
     else:
         # Fetch forecast weather for the specified day
         url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&start_date={day}&end_date={day}&units={units}"
@@ -69,8 +71,8 @@ def get_weather(latitude, longitude, day=None):
             weather_description = weather_code_descriptions.get(weather_code, "Unknown conditions")
             weather_str = (
                 f"Forecast for {day}: {weather_description}. "
-                f"Max temperature: {daily['temperature_2m_max'][day_index]}°F, "
-                f"Min temperature: {daily['temperature_2m_min'][day_index]}°F, "
+                f"Max temperature: {daily['temperature_2m_max'][day_index]}°, "
+                f"Min temperature: {daily['temperature_2m_min'][day_index]}°, "
                 f"Total precipitation: {daily['precipitation_sum'][day_index]} inches, "
                 f"Max wind speed: {daily['wind_speed_10m_max'][day_index]} mph."
             )
