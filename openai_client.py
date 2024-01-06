@@ -35,8 +35,12 @@ class OpenAIClient:
 
     def create_assistant_and_thread(self):
         # Load prompt and tools from files
-        with open('assistant-prompt.txt', 'r') as file:
-            instructions = file.read()
+        try:
+            with open('assistant-prompt.txt', 'r') as file:
+                instructions = file.read()
+        except FileNotFoundError:
+            print("The file 'assistant-prompt.txt' does not exist. Please move or rename 'assistant-prompt-template.txt' to 'assistant-prompt.txt'.")
+        
         with open('assistant-tools.json', 'r') as file:
             tools = json.load(file)
 
