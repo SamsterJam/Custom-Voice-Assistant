@@ -38,6 +38,7 @@ class OpenAIClient:
         try:
             with open('assistant-prompt.txt', 'r') as file:
                 instructions = file.read()
+                instructions += f"\n IMPORTANT: Check the date before retreiving the weather, as of now it is {datetime.datetime}"
         except FileNotFoundError:
             print("The file 'assistant-prompt.txt' does not exist. Please move or rename 'assistant-prompt-template.txt' to 'assistant-prompt.txt'.")
         
@@ -47,7 +48,7 @@ class OpenAIClient:
         # Create an Assistant
         assistant_response = self.client.beta.assistants.create(
             name="Voice-Assistant",
-            instructions=instructions + f"\n Current datetime: {datetime.datetime}",
+            instructions=instructions,
             tools=tools,
             model=self.model
         )
