@@ -6,15 +6,34 @@
         "type": "function",
         "function": {
             "name": "get_weather",
-            "description": "Get the current weather for a location",
+            "description": "Get the current weather for a specific latitude and longitude, or the historical weather for a specific day if provided. The function returns a human-readable string with weather information.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "location": {"type": "string", "description": "The city to get the weather for"}
+                    "latitude": {
+                        "type": "number",
+                        "description": "The latitude of the location to get the weather for"
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "description": "The longitude of the location to get the weather for"
+                    },
+                    "day": {
+                        "type": "string",
+                        "description": "The specific day to get historical weather for (optional, format: YYYY-MM-DD)"
+                    }
                 },
-                "required": ["location"]
+                "required": ["latitude", "longitude"]
             },
             "module": "get_weather"
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_time",
+            "description": "Get the current local time",
+            "module": "get_time"
         }
     }
 ]

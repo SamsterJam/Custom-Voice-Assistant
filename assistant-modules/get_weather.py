@@ -1,42 +1,80 @@
 import requests
-import json
+from datetime import datetime
 
-# Get api_key from config
-with open('config.json') as config_file:
-    config = json.load(config_file)
+# A mapping of weather codes to general forecast descriptions
+weather_code_descriptions = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    56: "Light freezing drizzle",
+    57: "Dense freezing drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    77: "Snow grains",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with slight hail",
+    99: "Thunderstorm with heavy hail",
+}
 
-api_key=config['custom']['openweathermap_api_key']
-
-# Module function
-def get_weather(location):
-    """
-    Get the current weather for a location using the OpenWeatherMap API.
-
-    :param api_key: API key for the OpenWeatherMap service.
-    :param location: The city to get the weather for.
-    :return: A string containing weather information or an error message.
-    """
-    # Construct the API endpoint with the location and API key
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=imperial"
-    
-    try:
-        # Make the API request
+def get_weather(latitude, longitude, day=None):
+    units = "fahrenheit"
+    today = datetime.now().strftime("%Y-%m-%d")
+    if day is None or day == today:
+        # Fetch current weather and today's high and low temperatures
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=weathercode,temperature_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&start_date={today}&end_date={today}&temperature_unit={units}"
         response = requests.get(url)
-        response.raise_for_status()  # Raise an HTTPError if the HTTP request returned an unsuccessful status code
-        
-        # Parse the JSON response
-        weather_data = response.json()
-        
-        # Format the weather information into a readable string
-        weather_info = (
-            f"Weather in {location}: {weather_data['weather'][0]['description']}. "
-            f"Temperature: {weather_data['main']['temp']}°F, "
-            f"Humidity: {weather_data['main']['humidity']}%, "
-            f"Wind Speed: {weather_data['wind']['speed']} mph."
+        data = response.json()
+        current = data.get('current', {})
+        daily = data.get('daily', {})
+        weather_code = current.get('weathercode')
+        weather_description = weather_code_descriptions.get(weather_code, "Unknown conditions")
+        high_temp = daily.get('temperature_2m_max', [])[0]  # Today's high temperature
+        low_temp = daily.get('temperature_2m_min', [])[0]  # Today's low temperature
+        weather_str = (
+            f"Current weather: {weather_description}. "
+            f"Temperature: {current.get('temperature_2m')}°F, "
+            f"High: {high_temp}°F, "
+            f"Low: {low_temp}°F, "
+            f"Wind speed: {current.get('wind_speed_10m')} mph, "
         )
+    else:
+        # Fetch forecast weather for the specified day
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max&start_date={day}&end_date={day}&units={units}"
+        response = requests.get(url)
+        data = response.json()
+        daily = data.get('daily', {})
+        time_slots = daily.get('time', [])
         
-        return weather_info
-    
-    except requests.RequestException as e:
-        # Handle any errors that occur during the API request
-        return f"Failed to get weather data for {location}: {e}"
+        # Find the forecast for the requested day
+        try:
+            day_index = time_slots.index(day)
+            weather_code = daily['weathercode'][day_index]
+            weather_description = weather_code_descriptions.get(weather_code, "Unknown conditions")
+            weather_str = (
+                f"Forecast for {day}: {weather_description}. "
+                f"Max temperature: {daily['temperature_2m_max'][day_index]}°F, "
+                f"Min temperature: {daily['temperature_2m_min'][day_index]}°F, "
+                f"Total precipitation: {daily['precipitation_sum'][day_index]} inches, "
+                f"Max wind speed: {daily['wind_speed_10m_max'][day_index]} mph."
+            )
+        except ValueError:
+            weather_str = "Forecast data not available for the requested day."
+
+    return weather_str

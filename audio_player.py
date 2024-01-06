@@ -20,10 +20,10 @@ def play_audio(audio_path):
             )
 
             # Read data in chunks and play the sound
-            data = wf.readframes(4096)
+            data = wf.readframes(8192)
             while len(data) > 0:
                 stream.write(data)
-                data = wf.readframes(4096)
+                data = wf.readframes(8192)
 
         except Exception as e:
             print(f"An error occurred during playback: {e}")

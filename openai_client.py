@@ -3,11 +3,13 @@ from pathlib import Path
 import json
 import importlib
 from audio_player import play_audio
+import datetime
 
 class OpenAIClient:
     def __init__(self, config):
         self.config = config
         self.client = openai.OpenAI(api_key=config['api-keys']['openai_api_key'])
+        self.model = config["assistant-settings"]["model"]
         self.assistant_id = None
         self.thread_id = None
         self.active_threads_file = Path('.active-threads')
@@ -41,9 +43,9 @@ class OpenAIClient:
         # Create an Assistant
         assistant_response = self.client.beta.assistants.create(
             name="Voice-Assistant",
-            instructions=instructions,
+            instructions=instructions + f"\n Current datetime: {datetime.datetime}",
             tools=tools,
-            model="gpt-3.5-turbo-1106"
+            model=self.model
         )
         self.assistant_id = assistant_response.id
         with open(self.active_assistants_file, 'w') as file:
@@ -109,6 +111,7 @@ class OpenAIClient:
             function_name = action.function.name
             arguments = json.loads(action.function.arguments)
 
+            print(f"Assistant called: '{function_name}({arguments})'")
             # Import the module from the 'assistant-modules' folder
             module = importlib.import_module(f'assistant-modules.{function_name}')
             function = getattr(module, function_name)
@@ -123,13 +126,16 @@ class OpenAIClient:
                 "output": output,
             })
 
-        # Submit the tool outputs to continue the run
-        self.client.beta.threads.runs.submit_tool_outputs(
-            thread_id=self.thread_id,
-            run_id=run.id,
-            tool_outputs=tool_outputs
-        )
-        play_audio('sounds/Received.wav')
+            play_audio('sounds/Received.wav')
+            print(f"Assistant received: '{output}'")
+
+        # Submit all the tool outputs together to continue the run
+        if tool_outputs:
+            self.client.beta.threads.runs.submit_tool_outputs(
+                thread_id=self.thread_id,
+                run_id=run.id,
+                tool_outputs=tool_outputs
+            )
 
 
     def close_assistant(self, assistant_id):
